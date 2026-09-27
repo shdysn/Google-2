@@ -40,6 +40,15 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Accept Android Licenses and Install Platform
+        run: |
+          sudo chown -R $USER:$USER $ANDROID_HOME || true
+          yes | sdkmanager --licenses || true
+          sdkmanager "platforms;android-36" || true
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
@@ -47,22 +56,19 @@ jobs:
 
       - name: Prepare build environment
         run: |
-          # Make Gradle wrapper executable if it exists
-          if [ -f "gradlew" ]; then
-            chmod +x gradlew
-          fi
+          # Make Gradle wrapper executable
+          chmod +x gradlew || true
 
           # Restore debug.keystore if base64 encoded version exists
-          if [ ! -f "debug.keystore" ] && [ -f "debug.keystore.base64" ]; then
-            echo "Restoring debug.keystore from debug.keystore.base64..."
+          if [ -f "debug.keystore.base64" ]; then
+            echo "Decoding debug.keystore..."
             base64 -d debug.keystore.base64 > debug.keystore
           fi
 
           # Ensure .env exists to prevent Secrets Gradle Plugin build failure
-          if [ ! -f ".env" ]; then
-            echo "Generating .env from .env.example..."
-            cp .env.example .env
-          fi
+          touch .env
+          cp .env.example .env 2>/dev/null || true
+          cp .env.example app/.env 2>/dev/null || true
 
       - name: Build Debug APK
         run: |
@@ -75,12 +81,13 @@ jobs:
       - name: Prepare APK artifact
         run: |
           mkdir -p output
-          APK_PATH=$(find app/build/outputs/apk/debug -name "*.apk" | head -n 1)
-          if [ -n "$APK_PATH" ]; then
-            echo "Found APK at: $APK_PATH"
-            cp "$APK_PATH" "output/SmartTimetable-debug.apk"
+          find app/build/outputs/apk -name "*.apk" -exec cp {} output/SmartTimetable-debug.apk \;
+          if [ -f "output/SmartTimetable-debug.apk" ]; then
+            echo "Successfully prepared output/SmartTimetable-debug.apk"
+            ls -lh output/SmartTimetable-debug.apk
           else
             echo "Error: No APK found after build"
+            find app/build -type f || true
             exit 1
           fi
 
