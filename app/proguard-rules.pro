@@ -10,6 +10,9 @@
     public *;
 }
 
+# Keep data models
+-keep class com.example.model.** { *; }
+
 # Preserve line numbers for stack traces
 -keepattributes SourceFile,LineNumberTable
 -renamesourcefileattribute SourceFile
