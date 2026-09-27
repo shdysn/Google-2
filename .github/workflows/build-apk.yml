@@ -34,13 +34,14 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Setup Gradle
+      - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '9.3.1'
 
       - name: Prepare build environment
         run: |
+          # Make Gradle wrapper executable
+          chmod +x gradlew || true
+
           # Restore debug.keystore if base64 encoded version exists
           if [ ! -f "debug.keystore" ] && [ -f "debug.keystore.base64" ]; then
             echo "Restoring debug.keystore from debug.keystore.base64..."
@@ -53,9 +54,9 @@ jobs:
             cp .env.example .env
           fi
 
-      - name: Build Debug APK
+      - name: Build Debug APK with Gradle Wrapper
         run: |
-          gradle assembleDebug --stacktrace
+          ./gradlew assembleDebug --stacktrace --no-daemon
 
       - name: Prepare APK artifact
         run: |
