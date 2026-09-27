@@ -39,32 +39,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Enforce software rendering on the window level to avoid MESA rendernode probes
-        window.setFlags(0, WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED)
-
-        // Ensure cache directory and WebView subdirectories have proper read/write/execute permissions
-        try {
-            fun ensurePermissions(file: File) {
-                file.setReadable(true, false)
-                file.setWritable(true, false)
-                file.setExecutable(true, false)
-                file.listFiles()?.forEach { child ->
-                    if (child.isDirectory) {
-                        ensurePermissions(child)
-                    } else {
-                        child.setReadable(true, false)
-                        child.setWritable(true, false)
-                    }
-                }
-            }
-            ensurePermissions(cacheDir)
-            val webViewCache = File(cacheDir, "WebView")
-            if (!webViewCache.exists()) {
-                webViewCache.mkdirs()
-            }
-            ensurePermissions(webViewCache)
-        } catch (_: Throwable) {
-        }
+        // Enable full hardware acceleration for 60/120fps smooth rendering
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+            WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
+        )
 
         val rootLayout = FrameLayout(this).apply {
             layoutParams = ViewGroup.LayoutParams(
@@ -84,7 +63,8 @@ class MainActivity : ComponentActivity() {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
-            setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+            // Use hardware layer for smooth CSS animations and 60fps scrolling
+            setLayerType(View.LAYER_TYPE_HARDWARE, null)
 
             settings.apply {
                 javaScriptEnabled = true
@@ -97,7 +77,9 @@ class MainActivity : ComponentActivity() {
                 setSupportZoom(true)
                 builtInZoomControls = true
                 displayZoomControls = false
-                cacheMode = WebSettings.LOAD_NO_CACHE
+                cacheMode = WebSettings.LOAD_DEFAULT
+                loadsImagesAutomatically = true
+                offscreenPreRaster = true
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
             }
 
