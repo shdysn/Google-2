@@ -40,26 +40,30 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Accept Android Licenses and Install Platform
-        run: |
-          sudo chown -R $USER:$USER $ANDROID_HOME || true
-          yes | sdkmanager --licenses || true
-          sdkmanager "platforms;android-36" || true
-
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.3.1'
+
+      - name: Prepare Android SDK and Licenses
+        run: |
+          # Ensure runner user owns Android SDK directory for downloads
+          if [ -d "$ANDROID_HOME" ]; then
+            sudo chown -R $USER:$USER "$ANDROID_HOME" || true
+            if [ -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
+              echo "Accepting Android SDK licenses..."
+              yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses || true
+              echo "Installing platform android-36 if available..."
+              "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" || true
+            fi
+          fi
 
       - name: Prepare build environment
         run: |
           # Make Gradle wrapper executable
           chmod +x gradlew || true
 
-          # Restore debug.keystore if base64 encoded version exists
+          # Restore debug.keystore from base64 if present
           if [ -f "debug.keystore.base64" ]; then
             echo "Decoding debug.keystore..."
             base64 -d debug.keystore.base64 > debug.keystore
