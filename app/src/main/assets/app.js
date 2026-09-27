@@ -6,28 +6,559 @@ const GOOGLE_SCRIPT_URL =
 const LOCAL_STORAGE_KEY = "smartTimetableLockedVersion1";
 
 const defaultData = {
-    schoolName: "MY SMART SCHOOL",
-    academicSession: "Session: 2026 - 2027",
-    totalPeriods: 8,
-    classes: [
-        "Class 2", "Class 3", "Class 5", "Class 6",
-        "Class 7", "Class 8", "Class 9", "Class 10"
+    "schoolName": "GHSS BAMA BALA ",
+    "academicSession": "Session: 2026 - 2027",
+    "totalPeriods": 8,
+    "classes": [
+        "Class 6",
+        "Class 7",
+        "Class 8",
+        "Class 9",
+        "Class 10"
     ],
-    subjects: [
-        "Math", "English", "Urdu", "Science",
-        "Chemistry", "Physics", "Biology", "Computer",
-        "Islamiat", "Pak Studies"
+    "subjects": [
+        "Math",
+        "English",
+        "Urdu",
+        "Science",
+        "Chemistry",
+        "Physics",
+        "Biology",
+        "Computer Sci",
+        "Islamiat",
+        "Pak Studies",
+        "Geography",
+        "Arabic",
+        "THQ",
+        "Sports"
     ],
-    teachers: [
-        "Shahid Yasin", "M. Ahmad", "Zafar Iqbal", "M. Hassan Nawaz",
-        "Hassan Tariq", "Nasir Ali", "Kaleem Abbas", "Mansoor Ahmad"
+    "teachers": [
+        "M. Ahmad",
+        "Hassan Tariq",
+        "Mansoor Ahmad",
+        "Shahid Yasin",
+        "Shafqat Rasool",
+        "Ishq e Rasool",
+        "Ahsan Saleem"
     ],
-    incharges: {},
-    teacherRoster: {},
-    temporaryTimetables: {},
-    subjectDays: {},
-    classCoTeachers: {},
-    classExtraSubjects: {}
+    "incharges": {
+        "Class 6": "Shafqat Rasool",
+        "Class 7": "Ahsan Saleem",
+        "Class 8": "Ishq e Rasool",
+        "Class 9": "Mansoor Ahmad",
+        "Class 10": "Shahid Yasin"
+    },
+    "teacherRoster": {
+        "M. Ahmad": [
+            {
+                "class": "None",
+                "subject": "None",
+                "role": "primary"
+            },
+            {
+                "class": "Class 9",
+                "subject": "Physics",
+                "role": "primary"
+            },
+            {
+                "class": "Class 10",
+                "subject": "Physics",
+                "role": "primary"
+            },
+            {
+                "class": "None",
+                "subject": "None",
+                "role": "primary"
+            },
+            {
+                "class": "Class 10",
+                "subject": "Biology",
+                "role": "primary"
+            },
+            {
+                "class": "Class 9",
+                "subject": "Biology",
+                "role": "primary"
+            },
+            {
+                "class": "Class 9",
+                "subject": "THQ",
+                "role": "primary"
+            },
+            {
+                "class": "None",
+                "subject": "None",
+                "role": "primary"
+            }
+        ],
+        "Hassan Tariq": [
+            {
+                "class": "None",
+                "subject": "None",
+                "role": "primary"
+            },
+            {
+                "class": "None",
+                "subject": "None",
+                "role": "primary"
+            },
+            {
+                "class": "Class 8",
+                "subject": "Computer Sci"
+            },
+            {
+                "class": "Class 6",
+                "subject": "Computer Sci",
+                "role": "primary"
+            },
+            {
+                "class": "Class 10",
+                "subject": "Computer Sci",
+                "role": "primary"
+            },
+            {
+                "class": "Class 9",
+                "subject": "Computer Sci",
+                "role": "primary"
+            },
+            {
+                "class": "Class 10",
+                "subject": "THQ",
+                "role": "primary"
+            },
+            {
+                "class": "Class 6",
+                "subject": "Islamiat",
+                "role": "primary"
+            }
+        ],
+        "Mansoor Ahmad": [
+            {
+                "class": "Class 9",
+                "subject": "English",
+                "role": "primary"
+            },
+            {
+                "class": "Class 10",
+                "subject": "English",
+                "role": "primary"
+            },
+            {
+                "class": "Class 9",
+                "subject": "Math",
+                "role": "primary"
+            },
+            {
+                "class": "Class 8",
+                "subject": "English",
+                "role": "primary"
+            },
+            {
+                "class": "None",
+                "subject": "None",
+                "role": "primary"
+            },
+            {
+                "class": "Class 7",
+                "subject": "Science",
+                "role": "primary"
+            },
+            {
+                "class": "Class 8",
+                "subject": "Science",
+                "role": "primary"
+            },
+            {
+                "class": "Class 9",
+                "subject": "Islamiat",
+                "role": "primary"
+            }
+        ],
+        "Shahid Yasin": [
+            {
+                "class": "Class 10",
+                "subject": "Math",
+                "role": "primary"
+            },
+            {
+                "class": "None",
+                "subject": "None",
+                "role": "primary"
+            },
+            {
+                "class": "Class 6",
+                "subject": "Geography",
+                "role": "primary"
+            },
+            {
+                "class": "Class 9",
+                "subject": "Chemistry",
+                "role": "primary"
+            },
+            {
+                "class": "Class 6",
+                "subject": "Math",
+                "role": "primary"
+            },
+            {
+                "class": "Class 6",
+                "subject": "Science",
+                "role": "primary"
+            },
+            {
+                "class": "None",
+                "subject": "None",
+                "role": "primary"
+            },
+            {
+                "class": "Class 10",
+                "subject": "Chemistry",
+                "role": "primary"
+            }
+        ],
+        "Shafqat Rasool": [
+            {
+                "class": "Class 6",
+                "subject": "English",
+                "role": "primary"
+            },
+            {
+                "class": "Class 8",
+                "subject": "Math",
+                "role": "primary"
+            },
+            {
+                "class": "Class 7",
+                "subject": "Math",
+                "role": "primary"
+            },
+            {
+                "class": "Class 10",
+                "subject": "Urdu",
+                "role": "primary"
+            },
+            {
+                "class": "Class 9",
+                "subject": "Urdu",
+                "role": "primary"
+            },
+            {
+                "class": "Class 10",
+                "subject": "Pak Studies",
+                "role": "primary"
+            },
+            {
+                "class": "Class 7",
+                "subject": "Geography",
+                "role": "primary"
+            },
+            {
+                "class": "None",
+                "subject": "None",
+                "role": "primary"
+            }
+        ],
+        "Ishq e Rasool": [
+            {
+                "class": "Class 8",
+                "subject": "Urdu",
+                "role": "primary"
+            },
+            {
+                "class": "Class 7",
+                "subject": "English",
+                "role": "primary"
+            },
+            {
+                "class": "None",
+                "subject": "None",
+                "role": "primary"
+            },
+            {
+                "class": "None",
+                "subject": "None",
+                "role": "primary"
+            },
+            {
+                "class": "Class 7",
+                "subject": "Urdu",
+                "role": "primary"
+            },
+            {
+                "class": "Class 8",
+                "subject": "Islamiat",
+                "role": "primary"
+            },
+            {
+                "class": "None",
+                "subject": "None",
+                "role": "primary"
+            },
+            {
+                "class": "Class 8",
+                "subject": "Geography",
+                "role": "primary"
+            }
+        ],
+        "Ahsan Saleem": [
+            {
+                "class": "Class 7",
+                "subject": "THQ",
+                "role": "primary"
+            },
+            {
+                "class": "Class 6",
+                "subject": "Urdu",
+                "role": "primary"
+            },
+            {
+                "class": "None",
+                "subject": "None"
+            },
+            {
+                "class": "Class 7",
+                "subject": "Arabic",
+                "role": "primary"
+            },
+            {
+                "class": "Class 8",
+                "subject": "THQ",
+                "role": "primary"
+            },
+            {
+                "class": "None",
+                "subject": "None",
+                "role": "primary"
+            },
+            {
+                "class": "Class 6",
+                "subject": "THQ",
+                "role": "primary"
+            },
+            {
+                "class": "Class 7",
+                "subject": "Islamiat",
+                "role": "primary"
+            }
+        ]
+    },
+    "temporaryTimetables": {
+        "2026-09-14": {
+            "leaveTeachers": [],
+            "substitutions": {}
+        },
+        "2026-09-15": {
+            "leaveTeachers": [],
+            "substitutions": {}
+        },
+        "2026-09-23": {
+            "leaveTeachers": [],
+            "substitutions": {}
+        },
+        "2026-09-25": {
+            "leaveTeachers": [],
+            "substitutions": {}
+        }
+    },
+    "classCoTeachers": {
+        "Class 6": [
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None"
+        ],
+        "Class 7": [
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None"
+        ],
+        "Class 8": [
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None"
+        ],
+        "Class 9": [
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None"
+        ],
+        "Class 10": [
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None"
+        ]
+    },
+    "classExtraSubjects": {
+        "Class 6": [
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "Sports",
+            "None"
+        ],
+        "Class 10": [
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "Sports",
+            "None"
+        ],
+        "Class 9": [
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "Sports",
+            "None"
+        ],
+        "Class 7": [
+            "Sports",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None"
+        ],
+        "Class 8": [
+            "None",
+            "None",
+            "None",
+            "None",
+            "Sports",
+            "None",
+            "None",
+            "None"
+        ]
+    },
+    "subjectDays": {
+        "Math": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+        ],
+        "English": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+        ],
+        "Urdu": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+        ],
+        "Science": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+        ],
+        "Chemistry": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+        ],
+        "Physics": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+        ],
+        "Biology": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+        ],
+        "Computer Sci": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+        ],
+        "Islamiat": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+        ],
+        "Pak Studies": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+        ],
+        "Geography": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+        ],
+        "Arabic": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+        ],
+        "THQ": [
+            "Monday",
+            "Tuesday",
+            "Wednesday"
+        ],
+        "Sports": [
+            "Thursday",
+            "Friday"
+        ]
+    }
 };
 
 let appData = {};
