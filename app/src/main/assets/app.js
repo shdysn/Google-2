@@ -774,9 +774,12 @@ function renderEverything() {
     renderSubjectSchedules();
     renderChips();
     applyMasterLockUI();
-    renderAssignment();
-    renderTemporaryTimetable();
-    renderMasterPrint();
+
+    const activePage = document.querySelector(".page.active");
+    const activePageId = activePage ? activePage.id : "page1";
+    if (activePageId === "page2") renderAssignment();
+    else if (activePageId === "page3") renderMasterPrint();
+    else if (activePageId === "page4") renderTemporaryTimetable();
 }
 
 const mobilePageNames = {
@@ -823,20 +826,21 @@ function updateMobileNavigation(pageNumber) {
     if (drawerSession) drawerSession.textContent = appData.academicSession || "Academic Session";
 }
 
-async function switchPage(pageNumber) {
+function switchPage(pageNumber) {
     document.querySelectorAll(".page").forEach(page => page.classList.remove("active"));
     document.querySelectorAll(".navbar button").forEach(button => button.classList.remove("active"));
     document.getElementById("page" + pageNumber)?.classList.add("active");
     document.getElementById("nav" + pageNumber)?.classList.add("active");
     updateMobileNavigation(pageNumber);
 
-    await refreshMasterLockStatus();
-
     if (pageNumber === 2) renderAssignment();
     if (pageNumber === 3) renderMasterPrint();
     if (pageNumber === 4) renderTemporaryTimetable();
 
     window.scrollTo(0, 0);
+
+    // Asynchronous background lock check without freezing the UI
+    refreshMasterLockStatus().catch(() => {});
 }
 
 function blockIfMasterLocked() {
@@ -2024,23 +2028,8 @@ document.addEventListener("keydown", event => {
     }
 });
 
-const smartSelectObserver = new MutationObserver(mutations => {
-    let newSelectFound = false;
-    mutations.forEach(mutation => {
-        mutation.addedNodes.forEach(addedNode => {
-            if (addedNode.nodeType !== Node.ELEMENT_NODE) return;
-            if (addedNode.matches && addedNode.matches("select")) newSelectFound = true;
-            if (addedNode.querySelector && addedNode.querySelector("select")) newSelectFound = true;
-        });
-    });
-    if (newSelectFound) {
-        requestAnimationFrame(() => initializeSmartSelects());
-    }
-});
-
-window.addEventListener("load", () => {
+window.addEventListener("DOMContentLoaded", () => {
     initializeSmartSelects();
-    smartSelectObserver.observe(document.body, { childList: true, subtree: true });
 });
 
 function applyAdaptiveTimetableFonts(root = document) {

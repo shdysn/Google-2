@@ -68,8 +68,8 @@ class MainActivity : ComponentActivity() {
                 allowContentAccess = true
                 useWideViewPort = true
                 loadWithOverviewMode = true
-                setSupportZoom(true)
-                builtInZoomControls = true
+                setSupportZoom(false)
+                builtInZoomControls = false
                 displayZoomControls = false
                 cacheMode = WebSettings.LOAD_DEFAULT
                 loadsImagesAutomatically = true

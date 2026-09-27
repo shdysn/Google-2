@@ -23,6 +23,10 @@ permissions:
   contents: write
   actions: read
 
+env:
+  ACTIONS_ALLOW_NODE20: 'true'
+  ACTIONS_RUNNER_FORCE_NODE24: 'false'
+
 jobs:
   build:
     name: Build Android APK and AAB Bundle
