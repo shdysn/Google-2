@@ -43,11 +43,10 @@ jobs:
 
       - name: Accept Android SDK Licenses
         run: |
-          # Write license hashes directly to avoid pipefail / SIGPIPE errors
           TARGET_DIR="${ANDROID_HOME:-/usr/local/lib/android/sdk}/licenses"
-          mkdir -p "$TARGET_DIR"
-          echo -e "\n24333f8a63b6825ea9c5514f83c2829b004d1fee\nd56f5187479451eabf01fb78af6dfcb131a6481e\n84831b9409646a918e30573bab4c9c91346d8abd" >> "$TARGET_DIR/android-sdk-license"
-          echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd\n504667f4c0de37312f22f840cbb5650b6129d733" >> "$TARGET_DIR/android-sdk-preview-license"
+          mkdir -p "$TARGET_DIR" || sudo mkdir -p "$TARGET_DIR" || true
+          echo -e "\n24333f8a63b6825ea9c5514f83c2829b004d1fee\nd56f5187479451eabf01fb78af6dfcb131a6481e\n84831b9409646a918e30573bab4c9c91346d8abd" | sudo tee -a "$TARGET_DIR/android-sdk-license" > /dev/null || true
+          echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd\n504667f4c0de37312f22f840cbb5650b6129d733" | sudo tee -a "$TARGET_DIR/android-sdk-preview-license" > /dev/null || true
 
       - name: Prepare build environment
         run: |
@@ -97,18 +96,14 @@ jobs:
           retention-days: 30
 
       - name: Create GitHub Release
-        if: success() && (github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-        uses: softprops/action-gh-release@v2
-        continue-on-error: true
-        with:
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || format('v1.0.{0}', github.run_number) }}
-          name: ${{ startsWith(github.ref, 'refs/tags/v') && format('Release {0}', github.ref_name) || format('Smart Timetable Build #{0}', github.run_number) }}
-          body: |
-            ### 📱 Smart Timetable Debug APK
-            - **Build Number**: `${{ github.run_number }}`
-            - **Commit**: `${{ github.sha }}`
-
-            Download the attached `SmartTimetable-debug.apk` directly to install on your Android device.
-          files: output/SmartTimetable-debug.apk
-          draft: false
-          prerelease: false
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG_NAME="v1.0.${{ github.run_number }}"
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAG_NAME="${{ github.ref_name }}"
+          fi
+          gh release create "$TAG_NAME" output/SmartTimetable-debug.apk \
+            --title "Smart Timetable $TAG_NAME" \
+            --notes "Debug APK build for commit ${{ github.sha }}." || true
