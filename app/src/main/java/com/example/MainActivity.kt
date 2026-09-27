@@ -42,6 +42,30 @@ class MainActivity : ComponentActivity() {
         // Enforce software rendering on the window level to avoid MESA rendernode probes
         window.setFlags(0, WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED)
 
+        // Ensure cache directory and WebView subdirectories have proper read/write/execute permissions
+        try {
+            fun ensurePermissions(file: File) {
+                file.setReadable(true, false)
+                file.setWritable(true, false)
+                file.setExecutable(true, false)
+                file.listFiles()?.forEach { child ->
+                    if (child.isDirectory) {
+                        ensurePermissions(child)
+                    } else {
+                        child.setReadable(true, false)
+                        child.setWritable(true, false)
+                    }
+                }
+            }
+            ensurePermissions(cacheDir)
+            val webViewCache = File(cacheDir, "WebView")
+            if (!webViewCache.exists()) {
+                webViewCache.mkdirs()
+            }
+            ensurePermissions(webViewCache)
+        } catch (_: Throwable) {
+        }
+
         val rootLayout = FrameLayout(this).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -73,6 +97,7 @@ class MainActivity : ComponentActivity() {
                 setSupportZoom(true)
                 builtInZoomControls = true
                 displayZoomControls = false
+                cacheMode = WebSettings.LOAD_NO_CACHE
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
             }
 
@@ -249,6 +274,7 @@ class MainActivity : ComponentActivity() {
                         javaScriptEnabled = false
                         domStorageEnabled = false
                         allowFileAccess = true
+                        cacheMode = WebSettings.LOAD_NO_CACHE
                     }
                 }
 

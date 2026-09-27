@@ -39,67 +39,52 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
+          cache: 'gradle'
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '9.3.1'
-
-      - name: Prepare Android SDK and Licenses
+      - name: Accept Android SDK Licenses
         run: |
-          set +o pipefail
-          if [ -n "$ANDROID_HOME" ] && [ -d "$ANDROID_HOME" ]; then
-            sudo chown -R $USER:$USER "$ANDROID_HOME" || true
-            mkdir -p "$ANDROID_HOME/licenses" || true
-            # Accept all standard and preview Android SDK licenses
-            printf "\n24333f8a63b6825ea9c5514f83c2829b004d1fee\nd56f5187479451eabf01fb78af6dfcb131a6481e\n84831b9409646a918e30573bab4c9c91346d8abd" > "$ANDROID_HOME/licenses/android-sdk-license" || true
-            printf "\n84831b9409646a918e30573bab4c9c91346d8abd\n504667f4c0de37312f22f840cbb5650b6129d733" > "$ANDROID_HOME/licenses/android-sdk-preview-license" || true
-            
-            if [ -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
-              yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses 2>/dev/null || true
-              "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" 2>/dev/null || true
-            fi
-          fi
+          # Write license hashes directly to avoid pipefail / SIGPIPE errors
+          TARGET_DIR="${ANDROID_HOME:-/usr/local/lib/android/sdk}/licenses"
+          mkdir -p "$TARGET_DIR"
+          echo -e "\n24333f8a63b6825ea9c5514f83c2829b004d1fee\nd56f5187479451eabf01fb78af6dfcb131a6481e\n84831b9409646a918e30573bab4c9c91346d8abd" >> "$TARGET_DIR/android-sdk-license"
+          echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd\n504667f4c0de37312f22f840cbb5650b6129d733" >> "$TARGET_DIR/android-sdk-preview-license"
 
       - name: Prepare build environment
         run: |
-          # Make Gradle wrapper executable
+          # Ensure gradlew is executable
           chmod +x gradlew || true
-
-          # Restore or generate debug.keystore
-          if [ -f "debug.keystore.base64" ]; then
-            echo "Decoding debug.keystore..."
-            base64 -d debug.keystore.base64 > debug.keystore 2>/dev/null || true
-          fi
-
-          if [ ! -s "debug.keystore" ]; then
-            echo "Generating standard debug.keystore with keytool..."
-            keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-          fi
 
           # Ensure .env exists to prevent Secrets Gradle Plugin build failure
           touch .env
-          cp .env.example .env 2>/dev/null || true
-          cp .env.example app/.env 2>/dev/null || true
+          cp -f .env.example .env 2>/dev/null || true
+          mkdir -p app
+          cp -f .env.example app/.env 2>/dev/null || true
 
-      - name: Build Debug APK
-        run: |
-          if [ -f "./gradlew" ]; then
-            ./gradlew assembleDebug --stacktrace --no-daemon
-          else
-            gradle assembleDebug --stacktrace --no-daemon
+          # Restore or generate debug keystore
+          if [ -f "debug.keystore.base64" ]; then
+            echo "Decoding debug.keystore from base64..."
+            base64 -d debug.keystore.base64 > debug.keystore 2>/dev/null || true
           fi
 
-      - name: Prepare APK artifact
+          if [ ! -f "debug.keystore" ] || [ ! -s "debug.keystore" ]; then
+            echo "Generating standard debug.keystore..."
+            keytool -genkeypair -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          fi
+
+      - name: Build Debug APK with Gradle Wrapper
+        run: |
+          ./gradlew assembleDebug --stacktrace --no-daemon
+
+      - name: Locate and Package APK
         run: |
           mkdir -p output
-          APK_FILE=$(find app/build/outputs/apk -name "*.apk" | head -n 1)
-          if [ -n "$APK_FILE" ] && [ -f "$APK_FILE" ]; then
-            echo "Found APK at: $APK_FILE"
-            cp "$APK_FILE" output/SmartTimetable-debug.apk
+          APK_PATH=$(find app/build/outputs/apk -name "*.apk" | head -n 1)
+          if [ -n "$APK_PATH" ] && [ -f "$APK_PATH" ]; then
+            echo "Found APK at: $APK_PATH"
+            cp "$APK_PATH" output/SmartTimetable-debug.apk
             ls -lh output/SmartTimetable-debug.apk
           else
-            echo "Error: No APK found after build"
+            echo "Error: No APK file generated!"
             find app/build -type f || true
             exit 1
           fi
@@ -122,7 +107,6 @@ jobs:
             ### 📱 Smart Timetable Debug APK
             - **Build Number**: `${{ github.run_number }}`
             - **Commit**: `${{ github.sha }}`
-            - **Event**: `${{ github.event_name }}`
 
             Download the attached `SmartTimetable-debug.apk` directly to install on your Android device.
           files: output/SmartTimetable-debug.apk
