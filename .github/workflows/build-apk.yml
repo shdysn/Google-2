@@ -1,15 +1,14 @@
-name: Build Debug APK
+name: Build and Release Debug APK
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "**" ]
     tags: [ "v*" ]
   pull_request:
-    branches: [ "main", "master" ]
   workflow_dispatch:
     inputs:
       create_release:
-        description: 'Create a GitHub Release with this APK'
+        description: 'Create a GitHub Release with APK asset'
         required: false
         type: boolean
         default: true
@@ -82,13 +81,13 @@ jobs:
         uses: softprops/action-gh-release@v2
         continue-on-error: true
         with:
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || format('build-{0}', github.run_number) }}
-          name: ${{ startsWith(github.ref, 'refs/tags/v') && format('Release {0}', github.ref_name) || format('Debug Build #{0}', github.run_number) }}
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || format('v1.0.{0}', github.run_number) }}
+          name: ${{ startsWith(github.ref, 'refs/tags/v') && format('Release {0}', github.ref_name) || format('Smart Timetable Build #{0}', github.run_number) }}
           body: |
             ### 📱 Smart Timetable Debug APK
             - **Build Number**: `${{ github.run_number }}`
             - **Commit**: `${{ github.sha }}`
-            - **Triggered By**: `${{ github.event_name }}`
+            - **Event**: `${{ github.event_name }}`
 
             Download the attached `SmartTimetable-debug.apk` directly to install on your Android device.
           files: output/SmartTimetable-debug.apk
