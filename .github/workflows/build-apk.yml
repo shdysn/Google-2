@@ -2,9 +2,15 @@ name: Build and Release Debug APK
 
 on:
   push:
-    branches: [ "**" ]
-    tags: [ "v*" ]
+    branches:
+      - main
+      - master
+    tags:
+      - 'v*'
   pull_request:
+    branches:
+      - main
+      - master
   workflow_dispatch:
     inputs:
       create_release:
@@ -36,11 +42,15 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.3.1'
 
       - name: Prepare build environment
         run: |
-          # Make Gradle wrapper executable
-          chmod +x gradlew || true
+          # Make Gradle wrapper executable if it exists
+          if [ -f "gradlew" ]; then
+            chmod +x gradlew
+          fi
 
           # Restore debug.keystore if base64 encoded version exists
           if [ ! -f "debug.keystore" ] && [ -f "debug.keystore.base64" ]; then
@@ -54,9 +64,13 @@ jobs:
             cp .env.example .env
           fi
 
-      - name: Build Debug APK with Gradle Wrapper
+      - name: Build Debug APK
         run: |
-          ./gradlew assembleDebug --stacktrace --no-daemon
+          if [ -f "./gradlew" ]; then
+            ./gradlew assembleDebug --stacktrace --no-daemon
+          else
+            gradle assembleDebug --stacktrace --no-daemon
+          fi
 
       - name: Prepare APK artifact
         run: |
@@ -78,7 +92,7 @@ jobs:
           retention-days: 30
 
       - name: Create GitHub Release
-        if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        if: success() && (github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
         uses: softprops/action-gh-release@v2
         continue-on-error: true
         with:
