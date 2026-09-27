@@ -23,12 +23,6 @@ import android.webkit.WebViewClient
 import android.view.WindowManager
 import android.widget.EditText
 import android.widget.FrameLayout
-import android.widget.LinearLayout
-import android.widget.ProgressBar
-import android.widget.TextView
-import android.view.Gravity
-import android.graphics.Typeface
-import android.content.res.ColorStateList
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
@@ -63,66 +57,6 @@ class MainActivity : ComponentActivity() {
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.setPadding(insets.left, insets.top, insets.right, insets.bottom)
             windowInsets
-        }
-
-        // Native instant branded splash placeholder (prevents any black or blank screen on cold start)
-        val splashOverlay = LinearLayout(this).apply {
-            layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
-            )
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER
-            setBackgroundColor(0xFFF8FAFC.toInt())
-
-            val iconView = TextView(context).apply {
-                text = "📘"
-                textSize = 58f
-                gravity = Gravity.CENTER
-            }
-            addView(iconView)
-
-            val titleView = TextView(context).apply {
-                text = "Smart Timetable"
-                textSize = 24f
-                setTextColor(0xFF0F172A.toInt())
-                setTypeface(null, Typeface.BOLD)
-                gravity = Gravity.CENTER
-                setPadding(0, (14 * resources.displayMetrics.density).toInt(), 0, (4 * resources.displayMetrics.density).toInt())
-            }
-            addView(titleView)
-
-            val subtitleView = TextView(context).apply {
-                text = "Loading workspace..."
-                textSize = 14f
-                setTextColor(0xFF64748B.toInt())
-                gravity = Gravity.CENTER
-                setPadding(0, 0, 0, (20 * resources.displayMetrics.density).toInt())
-            }
-            addView(subtitleView)
-
-            val progressBar = ProgressBar(context).apply {
-                indeterminateTintList = ColorStateList.valueOf(0xFF4F46E5.toInt())
-                val pSize = (36 * resources.displayMetrics.density).toInt()
-                layoutParams = LinearLayout.LayoutParams(pSize, pSize).apply {
-                    gravity = Gravity.CENTER_HORIZONTAL
-                }
-            }
-            addView(progressBar)
-        }
-
-        var splashDismissed = false
-        fun dismissSplash() {
-            if (!splashDismissed) {
-                splashDismissed = true
-                splashOverlay.animate()
-                    .alpha(0f)
-                    .setDuration(250)
-                    .withEndAction {
-                        (splashOverlay.parent as? ViewGroup)?.removeView(splashOverlay)
-                    }
-                    .start()
-            }
         }
 
         val wv = WebView(this).apply {
@@ -239,16 +173,6 @@ class MainActivity : ComponentActivity() {
                     request: WebResourceRequest?
                 ): Boolean = false
 
-                override fun onPageCommitVisible(view: WebView?, url: String?) {
-                    super.onPageCommitVisible(view, url)
-                    dismissSplash()
-                }
-
-                override fun onPageFinished(view: WebView?, url: String?) {
-                    super.onPageFinished(view, url)
-                    dismissSplash()
-                }
-
                 override fun onReceivedError(
                     view: WebView?,
                     request: WebResourceRequest?,
@@ -256,7 +180,6 @@ class MainActivity : ComponentActivity() {
                 ) {
                     super.onReceivedError(view, request, error)
                     Log.w("MainActivity", "WebView resource error: ${error?.description}")
-                    dismissSplash()
                 }
 
                 override fun onRenderProcessGone(
@@ -275,11 +198,7 @@ class MainActivity : ComponentActivity() {
 
         webView = wv
         rootLayout.addView(wv)
-        rootLayout.addView(splashOverlay)
         setContentView(rootLayout)
-
-        // Safety fallback: ensure splash is never stuck if page loads unusually fast or slow
-        splashOverlay.postDelayed({ dismissSplash() }, 1800)
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {

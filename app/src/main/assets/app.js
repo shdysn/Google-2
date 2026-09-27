@@ -183,9 +183,13 @@ function checkDataIntegrity() {
     });
 }
 
-window.addEventListener("load", initializeApplication);
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeApplication);
+} else {
+    initializeApplication();
+}
 
-async function initializeApplication() {
+function initializeApplication() {
     const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (localData) {
         try {
@@ -197,32 +201,41 @@ async function initializeApplication() {
         appData = deepClone(defaultData);
     }
 
-    if (!GOOGLE_SCRIPT_URL.startsWith("PASTE_")) {
-        try {
-            const response = await fetch(GOOGLE_SCRIPT_URL + "?action=getData&_=" + Date.now());
-            const result = await response.json();
-            const cloudData = result.data || result;
-            if (cloudData && Array.isArray(cloudData.teachers)) {
-                appData = cloudData;
-                delete appData.masterLocked;
-            }
-            masterLocked = Boolean(result.masterLocked ?? cloudData.masterLocked ?? false);
-        } catch (error) {
-            console.warn("Cloud loading failed or offline:", error);
-        }
-    }
-
     checkDataIntegrity();
 
-    document.getElementById("school-name").value = appData.schoolName || "";
-    document.getElementById("academic-session").value = appData.academicSession || "";
-    document.getElementById("total-periods").value = appData.totalPeriods || 8;
-    document.getElementById("temporary-date").value = getLocalDateKey();
+    const schoolEl = document.getElementById("school-name");
+    if (schoolEl) schoolEl.value = appData.schoolName || "";
+    const sessionEl = document.getElementById("academic-session");
+    if (sessionEl) sessionEl.value = appData.academicSession || "";
+    const periodsEl = document.getElementById("total-periods");
+    if (periodsEl) periodsEl.value = appData.totalPeriods || 8;
+    const tempDateEl = document.getElementById("temporary-date");
+    if (tempDateEl) tempDateEl.value = getLocalDateKey();
 
     activeItem = appData.teachers[0] || null;
     saveLocalData();
     renderEverything();
     updateMobileNavigation(1);
+
+    // Background asynchronous cloud sync (does not block instant millisecond startup)
+    if (!GOOGLE_SCRIPT_URL.startsWith("PASTE_")) {
+        fetch(GOOGLE_SCRIPT_URL + "?action=getData&_=" + Date.now())
+            .then(res => res.json())
+            .then(result => {
+                const cloudData = result.data || result;
+                if (cloudData && Array.isArray(cloudData.teachers)) {
+                    appData = cloudData;
+                    delete appData.masterLocked;
+                    masterLocked = Boolean(result.masterLocked ?? cloudData.masterLocked ?? false);
+                    checkDataIntegrity();
+                    saveLocalData();
+                    renderEverything();
+                }
+            })
+            .catch(error => {
+                console.warn("Background cloud sync note:", error);
+            });
+    }
 }
 
 function renderEverything() {
