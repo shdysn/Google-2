@@ -1,4 +1,4 @@
-name: Build and Release Debug APK
+name: Build and Release APK & AAB Bundle
 
 on:
   push:
@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
     inputs:
       create_release:
-        description: 'Create a GitHub Release with APK asset'
+        description: 'Create a GitHub Release with APK & AAB assets'
         required: false
         type: boolean
         default: true
@@ -25,7 +25,7 @@ permissions:
 
 jobs:
   build:
-    name: Build Android APK
+    name: Build Android APK and AAB Bundle
     runs-on: ubuntu-latest
 
     steps:
@@ -50,7 +50,6 @@ jobs:
 
       - name: Prepare build environment
         run: |
-          # Ensure gradlew is executable
           chmod +x gradlew || true
 
           # Ensure .env exists to prevent Secrets Gradle Plugin build failure
@@ -70,13 +69,15 @@ jobs:
             keytool -genkeypair -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
           fi
 
-      - name: Build Debug APK with Gradle Wrapper
+      - name: Build APK and AAB Bundle with Gradle Wrapper
         run: |
-          ./gradlew assembleDebug --stacktrace --no-daemon
+          ./gradlew assembleDebug bundleDebug --stacktrace --no-daemon
 
-      - name: Locate and Package APK
+      - name: Locate and Package Outputs
         run: |
           mkdir -p output
+          
+          # Locate APK
           APK_PATH=$(find app/build/outputs/apk -name "*.apk" | head -n 1)
           if [ -n "$APK_PATH" ] && [ -f "$APK_PATH" ]; then
             echo "Found APK at: $APK_PATH"
@@ -87,6 +88,25 @@ jobs:
             find app/build -type f || true
             exit 1
           fi
+
+          # Locate AAB Bundle
+          AAB_PATH=$(find app/build/outputs/bundle -name "*.aab" | head -n 1)
+          if [ -n "$AAB_PATH" ] && [ -f "$AAB_PATH" ]; then
+            echo "Found AAB at: $AAB_PATH"
+            cp "$AAB_PATH" output/SmartTimetable.aab
+            ls -lh output/SmartTimetable.aab
+          else
+            echo "Error: No AAB file generated!"
+            find app/build/outputs -type f || true
+            exit 1
+          fi
+
+      - name: Upload AAB Bundle Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SmartTimetable-aab
+          path: output/SmartTimetable.aab
+          retention-days: 30
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
@@ -104,6 +124,8 @@ jobs:
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
             TAG_NAME="${{ github.ref_name }}"
           fi
-          gh release create "$TAG_NAME" output/SmartTimetable-debug.apk \
+          gh release create "$TAG_NAME" \
+            output/SmartTimetable.aab \
+            output/SmartTimetable-debug.apk \
             --title "Smart Timetable $TAG_NAME" \
-            --notes "Debug APK build for commit ${{ github.sha }}." || true
+            --notes "Automated build with AAB (Android App Bundle) and APK assets for commit ${{ github.sha }}." || true

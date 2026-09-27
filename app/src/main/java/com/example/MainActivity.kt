@@ -39,12 +39,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Enable full hardware acceleration for 60/120fps smooth rendering
-        window.setFlags(
-            WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
-            WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
-        )
-
         val rootLayout = FrameLayout(this).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -65,8 +59,6 @@ class MainActivity : ComponentActivity() {
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
             setBackgroundColor(0xFFF8FAFC.toInt())
-            // Use hardware layer for smooth CSS animations and 60fps scrolling
-            setLayerType(View.LAYER_TYPE_HARDWARE, null)
 
             settings.apply {
                 javaScriptEnabled = true
@@ -81,7 +73,6 @@ class MainActivity : ComponentActivity() {
                 displayZoomControls = false
                 cacheMode = WebSettings.LOAD_DEFAULT
                 loadsImagesAutomatically = true
-                offscreenPreRaster = true
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
             }
 
