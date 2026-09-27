@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Timetable</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- PROFESSIONAL MOBILE MENU -->
+    <header class="mobile-topbar no-print">
+        <div class="mobile-brand">
+            <div class="mobile-brand-icon">📘</div>
+            <div class="mobile-brand-copy">
+                <div id="mobile-brand-title" class="mobile-brand-title">Smart Timetable</div>
+                <div id="mobile-current-page" class="mobile-brand-page">Setup</div>
+            </div>
+        </div>
+        <button id="menu-toggle" class="menu-toggle" type="button" aria-label="Open menu" onclick="toggleMobileMenu()">
+            <span class="menu-lines"><span></span><span></span><span></span></span>
+        </button>
+    </header>
+    <div id="menu-overlay" class="menu-overlay no-print" onclick="closeMobileMenu()"></div>
+    <aside id="mobile-drawer" class="mobile-drawer no-print">
+        <div class="drawer-head">
+            <div style="min-width:0"><div id="drawer-school" class="drawer-school">Smart Timetable</div><div id="drawer-session" class="drawer-session">Academic Session</div></div>
+            <button class="drawer-close" type="button" onclick="closeMobileMenu()">✕</button>
+        </div>
+        <div class="drawer-label">Navigation</div>
+        <nav class="drawer-nav">
+            <button id="drawer-nav1" class="drawer-nav-btn active" onclick="navigateFromMenu(1)"><span class="drawer-nav-icon">⚙️</span><span class="drawer-nav-copy"><span class="drawer-nav-title">Setup</span><span class="drawer-nav-note">School, classes, subjects and teachers</span></span><span class="drawer-arrow">›</span></button>
+            <button id="drawer-nav2" class="drawer-nav-btn" onclick="navigateFromMenu(2)"><span class="drawer-nav-icon">📝</span><span class="drawer-nav-copy"><span class="drawer-nav-title">Assign Duties</span><span class="drawer-nav-note">Teacher, class and incharge periods</span></span><span class="drawer-arrow">›</span></button>
+            <button id="drawer-nav4" class="drawer-nav-btn" onclick="navigateFromMenu(4)"><span class="drawer-nav-icon">📅</span><span class="drawer-nav-copy"><span class="drawer-nav-title">Temporary</span><span class="drawer-nav-note">Leave and substitute assignments</span></span><span class="drawer-arrow">›</span></button>
+            <button id="drawer-nav3" class="drawer-nav-btn" onclick="navigateFromMenu(3)"><span class="drawer-nav-icon">🖨️</span><span class="drawer-nav-copy"><span class="drawer-nav-title">Print Center</span><span class="drawer-nav-note">Preview and print timetables</span></span><span class="drawer-arrow">›</span></button>
+        </nav>
+        <div id="drawer-lock-status" class="drawer-status">
+            <span class="drawer-status-dot"></span>
+            <div><div id="drawer-lock-title" class="drawer-status-title">Timetable Unlocked</div><div class="drawer-status-note">Cloud-connected timetable workspace</div></div>
+        </div>
+    </aside>
+
+    <!-- DESKTOP / TABLET NAVIGATION -->
+    <div class="navbar no-print">
+        <button id="nav1" class="active" onclick="switchPage(1)">⚙️ Setup</button>
+        <button id="nav2" onclick="switchPage(2)">📝 Assign</button>
+        <button id="nav4" onclick="switchPage(4)">📅 Temporary</button>
+        <button id="nav3" onclick="switchPage(3)">🖨️ Print</button>
+    </div>
+
+    <!-- MASTER LOCK STATUS -->
+    <div id="master-lock-bar" class="lock-bar no-print">
+        <div>
+            <span id="master-lock-title" class="lock-title">🔓 Timetable Unlocked</span>
+            <span id="master-lock-message" class="lock-message">Permanent data can be edited.</span>
+        </div>
+        <button id="master-lock-button" class="btn" onclick="toggleMasterLock()">🔒 Lock Timetable</button>
+    </div>
+
+    <!-- PAGE 1: SETUP -->
+    <section id="page1" class="page active">
+        <div class="panel">
+            <div id="master-setup-area">
+                <div class="setup-hero">
+                    <div>
+                        <div class="setup-hero-title">✨ Workspace Configuration</div>
+                        <div class="setup-hero-subtitle">Manage school information, classes, subjects and teaching staff from one compact workspace.</div>
+                    </div>
+                    <div class="setup-summary">
+                        <div class="setup-summary-pill"><strong id="setup-class-total">0</strong><span>Classes</span></div>
+                        <div class="setup-summary-pill"><strong id="setup-subject-total">0</strong><span>Subjects</span></div>
+                        <div class="setup-summary-pill"><strong id="setup-teacher-total">0</strong><span>Teachers</span></div>
+                    </div>
+                </div>
+
+                <div class="setup-branding-box">
+                    <div class="setup-card-head" style="padding:0 0 12px;border-bottom:0">
+                        <div class="setup-card-title-wrap">
+                            <div class="setup-card-icon">🏫</div>
+                            <div><div class="setup-card-title">Document Branding</div><div class="setup-card-note">Information printed on every timetable</div></div>
+                        </div>
+                    </div>
+                    <div class="setup-branding-grid">
+                        <div><label class="label">Institute Name</label><input id="school-name" type="text" placeholder="School name" oninput="updateSettings()"></div>
+                        <div><label class="label">Academic Session</label><input id="academic-session" type="text" placeholder="Session: 2026 - 2027" oninput="updateSettings()"></div>
+                        <div class="period-field"><label class="label">Total Periods</label><input id="total-periods" type="number" min="1" max="15" onchange="updateSettings()"></div>
+                    </div>
+                </div>
+
+                <div class="setup-management-grid">
+                    <div class="setup-card class-card">
+                        <div class="setup-card-head"><div class="setup-card-title-wrap"><div class="setup-card-icon">🏫</div><div><div class="setup-card-title">Classes</div><div class="setup-card-note">Add sections and grades</div></div></div><div class="setup-count" id="classes-count">0</div></div>
+                        <div class="setup-card-body"><div class="setup-add-row"><input id="new-class" type="text" placeholder="e.g. Class 8 - A" onkeydown="if(event.key==='Enter') addItem('classes','new-class')"><button class="btn" onclick="addItem('classes','new-class')">+</button></div><div class="setup-list-label"><span>Class list</span><span>Edit or delete</span></div><div id="classes-chips" class="chips setup-chip-area"></div></div>
+                    </div>
+                    <div class="setup-card subject-card">
+                        <div class="setup-card-head"><div class="setup-card-title-wrap"><div class="setup-card-icon">📚</div><div><div class="setup-card-title">Subjects</div><div class="setup-card-note">Build the subject library</div></div></div><div class="setup-count" id="subjects-count">0</div></div>
+                        <div class="setup-card-body"><div class="setup-add-row"><input id="new-subject" type="text" placeholder="e.g. Mathematics" onkeydown="if(event.key==='Enter') addItem('subjects','new-subject')"><button class="btn" onclick="addItem('subjects','new-subject')">+</button></div><div class="subject-days-editor"><div class="setup-list-label" style="margin-top:0"><span>Days for new subject</span><span id="new-subject-day-count">5 days</span></div><div id="new-subject-days" class="subject-days-grid"></div></div><div class="setup-list-label"><span>Subject weekly schedule</span><span>Days auto-counted</span></div><div id="subject-schedule-list" class="subject-schedule-list"></div><div id="subjects-chips" style="display:none"></div></div>
+                    </div>
+                    <div class="setup-card teacher-card">
+                        <div class="setup-card-head"><div class="setup-card-title-wrap"><div class="setup-card-icon">👨‍🏫</div><div><div class="setup-card-title">Teachers</div><div class="setup-card-note">Manage teaching staff</div></div></div><div class="setup-count" id="teachers-count">0</div></div>
+                        <div class="setup-card-body"><div class="setup-add-row"><input id="new-teacher" type="text" placeholder="e.g. Teacher name" onkeydown="if(event.key==='Enter') addItem('teachers','new-teacher')"><button class="btn" onclick="addItem('teachers','new-teacher')">+</button></div><div class="setup-list-label"><span>Teacher list</span><span>Edit or delete</span></div><div id="teachers-chips" class="chips setup-chip-area"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PAGE 2: ASSIGN DUTIES -->
+    <section id="page2" class="page">
+        <div class="panel">
+            <div id="master-assignment-area">
+                <div class="assign-hero">
+                    <div><div class="assign-hero-title">🧠 Smart Duty Management</div><div class="assign-hero-note">Assign permanent duties with conflict awareness and a compact period editor.</div></div>
+                    <div class="assign-stats"><div class="assign-stat"><strong id="assign-teacher-total">0</strong><span>Teachers</span></div><div class="assign-stat"><strong id="assign-class-total">0</strong><span>Classes</span></div><div class="assign-stat"><strong id="assign-period-total">0</strong><span>Periods</span></div></div>
+                </div>
+                <div class="assign-mode-tabs">
+                    <button id="assign-mode-teacher" class="assign-mode-btn active" onclick="setAssignmentMode('teacher')">👨‍🏫 Instructor View</button>
+                    <button id="assign-mode-class" class="assign-mode-btn" onclick="setAssignmentMode('class')">🏫 Class View</button>
+                    <button id="assign-mode-incharge" class="assign-mode-btn" onclick="setAssignmentMode('incharge')">👑 Class Incharges</button>
+                </div>
+                <div class="assignment-layout">
+                    <div id="assignment-sidebar" class="sidebar"></div>
+                    <div class="assign-editor">
+                        <div class="assign-editor-head"><div><div id="assignment-title" class="assign-editor-title">Select an item</div><div id="assignment-subtitle" class="assign-editor-subtitle">Choose a teacher or class from the list.</div></div><div id="assignment-progress" class="assign-progress"></div></div>
+                        <div id="assignment-cards" class="cards"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PAGE 4: TEMPORARY TIMETABLE -->
+    <section id="page4" class="page">
+        <div class="panel">
+            <div class="temp-hero">
+                <div><div class="temp-hero-title">📅 Daily Leave & Temporary Timetable</div><div class="temp-hero-note">Mark absent teachers and assign available substitutes without changing the master timetable.</div></div>
+                <div class="temp-date-box"><label class="label">Timetable Date</label><input id="temporary-date" type="date" onchange="renderTemporaryTimetable()"></div>
+            </div>
+
+            <div class="temp-summary-row">
+                <div class="temp-summary-card danger"><strong id="leave-count">0</strong><span>On Leave</span></div>
+                <div class="temp-summary-card warning"><strong id="affected-count">0</strong><span>Affected Periods</span></div>
+                <div class="temp-summary-card success"><strong id="temp-assigned-count">0</strong><span>Substitutes Set</span></div>
+                <div class="temp-summary-card"><strong id="temp-pending-count">0</strong><span>Pending Duties</span></div>
+            </div>
+
+            <div class="temp-layout">
+                <aside class="temp-leave-panel">
+                    <div class="temp-panel-head"><div><div class="temp-panel-title">🏖️ Teachers on Leave</div><div class="temp-panel-note">Select all absent teachers</div></div><div id="temp-leave-badge" class="temp-leave-count">0 selected</div></div>
+                    <input id="temp-teacher-search" class="temp-search" type="text" placeholder="Search teacher..." oninput="filterTemporaryTeachers()">
+                    <div id="leave-teacher-list" class="leave-list"></div>
+                </aside>
+
+                <main class="temp-editor">
+                    <div class="temp-editor-head">
+                        <div><div class="temp-editor-title">Substitute Duty Assignments</div><div class="temp-editor-note">Only free and available teachers are shown in each dropdown.</div></div>
+                        <div class="temp-actions"><button class="btn btn-primary" onclick="autoAssignSubstitutes()">✨ Auto Assign</button><button class="btn btn-light" onclick="clearLeaveTeachers()">✓ Clear Leave</button><button class="btn btn-light" onclick="clearSubstituteAssignments()">↺ Clear Assignments</button><button class="btn btn-danger" onclick="clearTemporaryDate()">🗑️ Clear Date</button></div>
+                    </div>
+                    <div id="temp-progress" class="temp-progress"></div>
+                    <div id="temporary-cards" class="cards"></div>
+                </main>
+            </div>
+        </div>
+
+        <div class="paper temporary-paper">
+            <h1 id="temporary-print-school"></h1>
+            <p id="temporary-print-heading"></p>
+            <p id="temporary-print-leaves"></p>
+            <table class="print-table"><thead><tr><th>Period</th><th>Class</th><th>Subject</th><th>Absent Teacher</th><th>Substitute Teacher</th><th>Status</th></tr></thead><tbody id="temporary-print-body"></tbody></table>
+            <div class="signatures"><div class="signature">Prepared By</div><div class="signature">Timetable Incharge</div><div class="signature">Principal</div></div>
+        </div>
+        <div class="no-print" style="text-align:center"><button class="btn" onclick="printTemporaryTimetable()">🖨️ Print Temporary Timetable</button></div>
+    </section>
+
+    <!-- PAGE 3: PRINT CENTER -->
+    <section id="page3" class="page">
+        <div class="print-center-ui">
+            <div class="print-hero">
+                <div><div class="print-hero-title">🖨️ Smart Print Center</div><div class="print-hero-note">Preview class and individual timetables before producing a clean A4 landscape print.</div></div>
+                <div class="print-hero-actions"><button class="btn btn-primary" onclick="printMasterTimetables()">🖨️ Print All</button><button class="btn btn-light" onclick="showPrintPreview('class')">🏫 Class View</button><button class="btn btn-light" onclick="showPrintPreview('teachers')">👨‍🏫 Teacher View</button></div>
+            </div>
+            <div class="print-summary">
+                <div class="print-summary-card"><strong id="print-class-total">0</strong><span>Classes</span></div>
+                <div class="print-summary-card green"><strong id="print-teacher-total">0</strong><span>Teachers</span></div>
+                <div class="print-summary-card orange"><strong id="print-period-total">0</strong><span>Periods</span></div>
+                <div class="print-summary-card"><strong id="print-page-total">0</strong><span>Estimated Pages</span></div>
+            </div>
+            <div class="print-tabs">
+                <button id="print-tab-class" class="print-tab-btn active" onclick="showPrintPreview('class')">🏫 Class Timetable</button>
+                <button id="print-tab-teachers" class="print-tab-btn" onclick="showPrintPreview('teachers')">👨‍🏫 Teacher Timetable</button>
+                <button id="print-tab-individual" class="print-tab-btn" onclick="showPrintPreview('individual')">📄 Individual Slips</button>
+            </div>
+        </div>
+        <div class="print-preview-shell">
+            <div class="print-center-ui print-preview-head"><div><div id="print-preview-title" class="print-preview-title">Class Timetable</div><div class="print-preview-note">On mobile, swipe the timetable left or right.</div></div><div class="print-scale-note">A4 Landscape Preview</div></div>
+            <div id="print-preview-class" class="print-preview-section active">
+                <div class="paper master-paper">
+                    <h1 id="master-print-school"></h1>
+                    <p id="master-print-session"></p>
+                    <h2>CLASS TIMETABLE</h2>
+                    <table class="print-table compact-class-table">
+                        <thead id="class-print-head"></thead>
+                        <tbody id="class-print-body"></tbody>
+                    </table>
+                    <div class="signatures">
+                        <div class="signature">Prepared By</div>
+                        <div class="signature">Timetable Incharge</div>
+                        <div class="signature">Principal</div>
+                    </div>
+                </div>
+            </div>
+            <div id="print-preview-teachers" class="print-preview-section">
+                <div class="paper master-paper">
+                    <h1 id="teacher-print-school"></h1>
+                    <p id="teacher-print-session"></p>
+                    <h2>TEACHER TIMETABLE</h2>
+                    <table class="print-table">
+                        <thead id="teacher-print-head"></thead>
+                        <tbody id="teacher-print-body"></tbody>
+                    </table>
+                    <div class="signatures">
+                        <div class="signature">Prepared By</div>
+                        <div class="signature">Timetable Incharge</div>
+                        <div class="signature">Principal</div>
+                    </div>
+                </div>
+            </div>
+            <div id="print-preview-individual" class="print-preview-section">
+                <!-- INDIVIDUAL TEACHER TIMETABLES (3 per page) -->
+                <div id="individual-teacher-print-area"></div>
+            </div>
+        </div>
+        <div class="print-center-ui print-fab"><button class="btn btn-primary" onclick="printMasterTimetables()">🖨️ Print All Timetables</button></div>
+    </section>
+
+    <script src="app.js"></script>
+</body>
+</html>

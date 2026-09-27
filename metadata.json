@@ -1,0 +1,6 @@
+{
+  "name": "Smart Timetable",
+  "description": "Academic timetable and duty assignment manager with substitute teacher scheduling and A4 landscape print center.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
